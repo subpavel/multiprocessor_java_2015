@@ -2,7 +2,9 @@ package ru.sbtmipt;
 
 public class Table {
     /*Two conditions of the forks*/
-    private enum ForkState {DIRTY, CLEAN}
+    private enum ForkState {
+        DIRTY, CLEAN
+    }
 
     private final int n;
     private volatile ForkState[] forkStates;
@@ -40,9 +42,8 @@ public class Table {
             if (forks[rightFork] != philId && forkStates[rightFork] == ForkState.DIRTY) {
                 forkStates[rightFork] = ForkState.CLEAN;
                 forks[rightFork] = philId;
-            }
-            // if failed, let others know
-            if (forks[rightFork] != philId) {
+            } else {
+                // if failed, let others know
                 philWaiting[philId][0] = true;
             }
 
@@ -50,9 +51,8 @@ public class Table {
             if (forks[leftFork] != philId && forkStates[leftFork] == ForkState.DIRTY) {
                 forkStates[leftFork] = ForkState.CLEAN;
                 forks[leftFork] = philId;
-            }
-            // if failed, let others know
-            if (forks[leftFork] != philId) {
+            } else {
+                // if failed, let others know
                 philWaiting[philId][1] = true;
             }
         }
