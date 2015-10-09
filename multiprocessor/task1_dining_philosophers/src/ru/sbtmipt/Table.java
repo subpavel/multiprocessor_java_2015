@@ -1,6 +1,7 @@
 package ru.sbtmipt;
 
 public class Table {
+    /*Two conditions of the forks*/
     private enum ForkState {DIRTY, CLEAN}
 
     private final int n;
@@ -8,9 +9,9 @@ public class Table {
 
     /*Owners of the forks*/
     private volatile int[] forks;
-    /*Waiting flags for philosophers' forks*/
+    /*Waiting flags for the philosophers' forks*/
     private volatile boolean[][] philWaiting;
-    /*Numbers of of food intakes*/
+    /*Numbers of food intakes*/
     private long[] philCounters;
 
     public Table(int n) {
@@ -55,10 +56,10 @@ public class Table {
                 philWaiting[philId][1] = true;
             }
         }
-        philCounters[philId]++;
-
+        // no more waiting
         philWaiting[philId][0] = false;
         philWaiting[philId][1] = false;
+        philCounters[philId]++;
     }
 
     public void putDownForks(int philId) {
@@ -68,14 +69,17 @@ public class Table {
         int rightId = philId == 0 ? n - 1 : philId - 1;
         int leftId = (philId + 1) % n;
 
+        // set the forks' states to dirty so that others could use them
         forkStates[rightFork] = ForkState.DIRTY;
         forkStates[leftFork] = ForkState.DIRTY;
 
-        if (philWaiting[rightId][0]) {
+        // if another philosopher is waiting for this fork, he gets it
+        // the fork is cleaned before sending
+        if (philWaiting[rightId][0]) { // the right neighbor's left fork
             forkStates[rightFork] = ForkState.CLEAN;
             forks[rightFork] = rightId;
         }
-        if (philWaiting[leftId][1]) {
+        if (philWaiting[leftId][1]) { // the left neighbor's right fork
             forkStates[leftFork] = ForkState.CLEAN;
             forks[leftFork] = leftId;
         }
