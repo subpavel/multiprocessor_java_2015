@@ -1,62 +1,58 @@
 package ru.sbtmipt;
 
-import java.util.Random;
-
-/**
- * Created by PavelSub on 10/3/2015.
- */
 public class Philosopher extends Thread {
 
-    private int philId;
-    private int health;
+    private static final long THINKING_TIME = 100000;
+    private static final long EATING_TIME = 50000;
 
-    public Philosopher(int philId) {
+    private final long simulationTime;
+
+    private final int philId;
+    private final Table table;
+
+    public Philosopher(int philId, Table table, long simulationTime) {
         this.philId = philId;
+        this.simulationTime = simulationTime;
+        this.table = table;
     }
 
     @Override
     public void run() {
-        while (true) {
-            // think
-            try {
-                System.out.println("Phil " + philId + " starts thinking");
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            // eat
+        long start = System.nanoTime();
+        long end;
+        do {
+            end = System.nanoTime();
+            think();
             eat();
-        }
+        } while (start + simulationTime >= end);
     }
 
     void eat() {
-        // pick up forks
-        // implementing partial order by always getting fork with lower number first
-        System.out.println("Phil " + philId + " is getting forks");
-        int firstFork = Math.min(philId, (philId + 1) % Main.N);
-        int secondFork = Math.max(philId, (philId + 1) % Main.N);
-        Main.forks[firstFork].lock();
-        Main.forks[secondFork].lock();
+        System.out.println("Phil " + philId + " is trying to pick up forks");
+        table.pickUpForks(philId);
 
-        // eat
-        try {
-            System.out.println("Phil " + philId + " starts eating");
-            Thread.sleep(3);
-            health++;
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            // put down forks
-            Main.forks[firstFork].unlock();
-            Main.forks[secondFork].unlock();
-        }
+        System.out.println("Phil " + philId + " has started eating");
+        simulateSleep(EATING_TIME);
+        System.out.println("Phil " + philId + " has ended eating ");
+
+        table.putDownForks(philId);
     }
 
-    public int getHealth() {
-        return health;
+    void think() {
+        System.out.println("Phil " + philId + " has started thinking");
+        simulateSleep(THINKING_TIME);
+        System.out.println("Phil " + philId + " has ended thinking");
     }
 
     public int getPhilId() {
         return philId;
+    }
+
+    private void simulateSleep(long sleepingTime) {
+        long start = System.nanoTime();
+        long end;
+        do {
+            end = System.nanoTime();
+        } while (start + sleepingTime >= end);
     }
 }

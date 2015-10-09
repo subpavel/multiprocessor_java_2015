@@ -1,33 +1,28 @@
 package ru.sbtmipt;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 public class Main {
-    public static final int N = 5;
-    public static Lock[] forks = new ReentrantLock[Main.N];
+    private static final int N = 5;
+    private static final long simulationTime = 5000000000L;
 
     public static void main(String[] args) {
         Philosopher[] philosophers = new Philosopher[N];
+        Table table = new Table(N);
+
         for (int i = 0; i < N; i++) {
-            forks[i] = new ReentrantLock();
-        }
-        for (int i = 0; i < N; i++) {
-            philosophers[i] = new Philosopher(i);
-            philosophers[i].setDaemon(true);
+            philosophers[i] = new Philosopher(i, table, simulationTime);
             philosophers[i].start();
         }
 
         // let philosophers do their job
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for (int i = 0; i < N; i++) {
+            try {
+                philosophers[i].join();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         // check results
-        for (Philosopher philosopher :philosophers) {
-            System.out.println(philosopher.getPhilId() + " hp: " + philosopher.getHealth());
-        }
+        table.printCounters();
     }
 }
